@@ -85,9 +85,9 @@ create_database_backup() {
     if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
             --zip 1 --interactive 0 \
             > /dev/null 2>&1; then
-        printf "[SUCCESS] DB Backup $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
+        printf "[SUCCESS][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
     else
-        printf "[ERROR] DB Backup  $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
+        printf "[ERROR][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -116,9 +116,9 @@ s3_sync_files() {
           --exclude "*/storage/runtime/*" \
           --no-progress \
           --only-show-errors; then
-        printf "[SUCCESS] S3 File Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
+        printf "[SUCCESS][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
     else
-        printf "[ERROR] S3 File Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
+        printf "[ERROR][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -128,9 +128,9 @@ s3_sync_db_backups() {
           --profile craftcms-backups \
           --no-progress \
           --only-show-errors; then
-        printf "[SUCCESS] DB Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
+        printf "[SUCCESS][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
     else
-        printf "[ERROR] DB Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
+        printf "[ERROR][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
     fi
 }
 
