@@ -82,13 +82,13 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
-    if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
-            --zip 1 --interactive 0 \
-            > /dev/null 2>&1; then
-        printf "[SUCCESS][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
-    else
-        printf "[ERROR][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
-    fi
+    # if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
+    #         --zip 1 --interactive 0 \
+    #         > /dev/null 2>&1; then
+    #     printf "[SUCCESS][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
+    # else
+    #     printf "[ERROR][DBEXPORT] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
+    # fi
 }
 
 # Sync site files to S3
@@ -104,34 +104,37 @@ s3_sync_files() {
     # printf ${SITE_NAME}
 
     # Sync site files
-    if aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
-          --profile craftcms-backups \
-          --exclude ".git/*" \
-          --exclude "vendor/*" \
-          --exclude "node_modules/*" \
-          --exclude "storage/runtime/*" \
-          --exclude "*/.git/*" \
-          --exclude "*/vendor/*" \
-          --exclude "*/node_modules/*" \
-          --exclude "*/storage/runtime/*" \
-          --no-progress \
-          --only-show-errors; then
-        printf "[SUCCESS][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
-    else
-        printf "[ERROR][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
-    fi
+    # if aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
+    #       --profile craftcms-backups \
+    #       --exclude ".git/*" \
+    #       --exclude "vendor/*" \
+    #       --exclude "node_modules/*" \
+    #       --exclude "storage/runtime/*" \
+    #       --exclude "*/.git/*" \
+    #       --exclude "*/vendor/*" \
+    #       --exclude "*/node_modules/*" \
+    #       --exclude "*/storage/runtime/*" \
+    #       --no-progress \
+    #       --only-show-errors; then
+    #     printf "[SUCCESS][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
+    # else
+    #     printf "[ERROR][FILESYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
+    # fi
 }
 
 # Sync DB backup directory
 s3_sync_db_backups() {
-    if aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
-          --profile craftcms-backups \
-          --no-progress \
-          --only-show-errors; then
-        printf "[SUCCESS][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
-    else
-        printf "[ERROR][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
-    fi
+
+aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
+          --profile craftcms-backups
+    # if aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
+    #       --profile craftcms-backups \
+    #       --no-progress \
+    #       --only-show-errors; then
+    #     printf "[SUCCESS][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
+    # else
+    #     printf "[ERROR][DBSYNC] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
+    # fi
 }
 
 # Delete DB backups older than a given retention date (default: 30 days)
