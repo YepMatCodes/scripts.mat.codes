@@ -126,7 +126,7 @@ s3_sync_files() {
 s3_sync_db_backups() {
 
     printf "Backup dir: ${DB_BACKUP_DIRECTORY}"
-    printf "Backup tar: ${DB_BACKUP_DIRECTORY}"
+    printf "Backup tar: ${S3_BACKUP_TARGET}"
 
     aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
         --profile craftcms-backups
