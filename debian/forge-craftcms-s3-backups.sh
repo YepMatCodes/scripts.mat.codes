@@ -77,7 +77,7 @@ create_database_backup() {
     SITE_NAME="${SITE_NAME%/current}"
     SITE_NAME="${SITE_NAME%/}"
 
-    local SITE_DB_BACKUP_PATH="/home/forge/db-backups/${SITE_NAME}/"
+    local SITE_DB_BACKUP_PATH="${DB_BACKUP_DIRECTORY}/${SITE_NAME}/"
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
@@ -95,18 +95,22 @@ s3_sync_files() {
     SITE_NAME="${SITE_NAME%/current}"
     SITE_NAME="${SITE_NAME%/}"
 
+    echo ${SITE_NAME}
+
     # Sync site files
     echo "\nSyncing ${SITE_NAME} site files"
-    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
-      --profile craftcms-backups \
-      --exclude ".git/*" \
-      --exclude "vendor/*" \
-      --exclude "node_modules/*" \
-      --exclude "storage/runtime/*" \
-      --exclude "*/.git/*" \
-      --exclude "*/vendor/*" \
-      --exclude "*/node_modules/*" \
-      --exclude "*/storage/runtime/*"
+    echo "Source: ${CRAFT_DIRECTORY}"
+    echo "Target: ${S3_BACKUP_TARGET}/${SITE_NAME}"
+    # aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
+    #   --profile craftcms-backups \
+    #   --exclude ".git/*" \
+    #   --exclude "vendor/*" \
+    #   --exclude "node_modules/*" \
+    #   --exclude "storage/runtime/*" \
+    #   --exclude "*/.git/*" \
+    #   --exclude "*/vendor/*" \
+    #   --exclude "*/node_modules/*" \
+    #   --exclude "*/storage/runtime/*"
 }
 
 # Sync DB backup directory
