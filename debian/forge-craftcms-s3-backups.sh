@@ -50,9 +50,10 @@ if [ -z "$S3_BUCKET_NAME" ]; then
 fi
 
 readonly S3_BUCKET_NAME
-S3_BACKUP_TARGET="s3://${S3_BUCKET_NAME}/${HOSTNAME}"
 
 HOSTNAME="$(hostname)"
+S3_BACKUP_TARGET="s3://${S3_BUCKET_NAME}/${HOSTNAME}"
+
 
 DB_BACKUP_DIRECTORY="/home/forge/_db-backups"
 LOG_DIRECTORY="/home/forge/backup-logs"
