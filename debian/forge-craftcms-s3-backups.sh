@@ -82,7 +82,6 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
-    # printf "Creating DB backup for ${SITE_NAME}\n"
     if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
             --zip 1 --interactive 0 \
             > /dev/null 2>&1; then
