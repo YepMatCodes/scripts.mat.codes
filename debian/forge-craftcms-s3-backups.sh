@@ -99,6 +99,7 @@ s3_sync_files() {
 
     # Sync site files
     echo "\nSyncing ${SITE_NAME} site files"
+    echo "Site name: ${SITE_NAME}"
     echo "Source: ${CRAFT_DIRECTORY}"
     echo "Target: ${S3_BACKUP_TARGET}/${SITE_NAME}"
     # aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
