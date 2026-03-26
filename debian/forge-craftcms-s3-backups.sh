@@ -10,18 +10,45 @@
 #              - Syncs all files for each site to S3 bucket stored in a directory
 #                   with the current server's hostname
 #              - Syncs DB backups to same S3 directory under a separate /DB-Backups directory
+# Parameters:
+#             <bucket_name> | defaults to using environment value
+#                  "FORGE_CRAFT_S3_BUCKET_NAME" if set.
+#             --retention <n in days> | defaults to 30 days (optional)
+#
 # Author: Mathew Norman
 # Created: 2026-03-27
 # Last Updated: 2026-03-27
 # ==============================================================================
 
-# Require S3 bucket name parameter
-if [ -z "$1" ]; then
-  echo "Usage: $0 <s3-bucket-name>"
+RETENTION_DAYS=30
+POSITIONAL_BUCKET=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --retention)
+      RETENTION_DAYS="$2"
+      shift 2
+      ;;
+    --retention=*)
+      RETENTION_DAYS="${1#*=}"
+      shift
+      ;;
+    *)
+      POSITIONAL_BUCKET="$1"
+      shift
+      ;;
+  esac
+done
+
+# Set bucket name
+S3_BUCKET_NAME="${FORGE_CRAFT_S3_BUCKET_NAME:-$POSITIONAL_BUCKET}"
+
+if [ -z "$S3_BUCKET_NAME" ]; then
+  echo "Usage: $0 [--retention DAYS] <s3-bucket-name>"
   exit 1
 fi
 
-S3_BUCKET_NAME="$1"
+readonly S3_BUCKET_NAME
 S3_BACKUP_TARGET="s3://${S3_BUCKET_NAME}/${HOSTNAME}"
 
 HOSTNAME="$(hostname)"
@@ -47,7 +74,7 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
-    "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}"
+    "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" --zip 1 --interactive 0
 }
 
 # Sync site files to S3
@@ -62,13 +89,17 @@ s3_sync_files() {
 
     # Sync site files
     echo "\nSyncing ${SITE_NAME} site files"
-    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --no-progress
+    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups --no-progress
 }
 
 # Sync DB backup directory
 s3_sync_db_backups() {
     echo "\nPerforming database backup"
-    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --no-progress
+    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups --no-progress
+}
+
+s3_backup_retention() {
+    find "${DB_BACKUP_DIRECTORY}" -type f -mtime +"${RETENTION_DAYS}" -delete
 }
 
 # Loop through all directories in /home/forge looking for craft installs
