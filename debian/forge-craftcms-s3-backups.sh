@@ -82,13 +82,13 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
-    printf "Creating DB backup for ${SITE_NAME}\n"
+    # printf "Creating DB backup for ${SITE_NAME}\n"
     if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
             --zip 1 --interactive 0 \
             > /dev/null 2>&1; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
+        printf "[SUCCESS] DB Backup $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
+        printf "[ERROR] DB Backup  $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -117,9 +117,9 @@ s3_sync_files() {
           --exclude "*/storage/runtime/*" \
           --no-progress \
           --only-show-errors; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
+        printf "[SUCCESS] S3 File Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
+        printf "[ERROR] S3 File Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -129,15 +129,15 @@ s3_sync_db_backups() {
           --profile craftcms-backups \
           --no-progress \
           --only-show-errors; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
+        printf "[SUCCESS] DB Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
+        printf "[ERROR] DB Sync $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
     fi
 }
 
 # Delete DB backups older than a given retention date (default: 30 days)
 s3_backup_retention() {
-    printf "\nRemoving backups older than ${RETENTION_DAYS} days old"
+    printf "\nRemoving backups older than ${RETENTION_DAYS} days old\n"
     find "${DB_BACKUP_DIRECTORY}" -type f -mtime +"${RETENTION_DAYS}" \
         -print -delete
 }
