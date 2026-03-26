@@ -23,6 +23,7 @@
 RETENTION_DAYS=30
 POSITIONAL_BUCKET=""
 
+# Process any retention parameter
 while [ $# -gt 0 ]; do
   case "$1" in
     --retention)
@@ -59,6 +60,12 @@ LOG_DIRECTORY="/home/forge/scripts/logs"
 # Create backup and log directories if not already present
 mkdir -p "${DB_BACKUP_DIRECTORY}"
 mkdir -p "${LOG_DIRECTORY}"
+
+# Setup logging
+TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
+
+exec > "${LOG_FILE}" 2>&1
 
 # Backup craft databases
 create_database_backup() {
