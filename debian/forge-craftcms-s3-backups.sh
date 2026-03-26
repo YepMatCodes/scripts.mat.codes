@@ -126,23 +126,20 @@ s3_sync_files() {
 s3_sync_db_backups() {
     DB_S3_BACKUP_TARGET="${S3_BACKUP_TARGET}/_DB-Backups"
 
-    printf "[DEBUG][DBSYNC] Backup dir: %s\n" "${DB_BACKUP_DIRECTORY}"
-    printf "[DEBUG][DBSYNC] Backup target: %s\n" "${DB_S3_BACKUP_TARGET}"
+    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${DB_S3_BACKUP_TARGET}" \
+        --profile craftcms-backups \
+        --no-progress \
+        --only-show-errors
+    STATUS=$?
 
-    # aws s3 sync "${DB_BACKUP_DIRECTORY}" "${DB_S3_BACKUP_TARGET}" \
-    #     --profile craftcms-backups \
-    #     --no-progress \
-    #     --only-show-errors
-    # STATUS=$?
-
-    # if [ "${STATUS}" -eq 0 ]; then
-    #     printf "[SUCCESS][DBSYNC] %s S3 sync completed for DB Backups\n" \
-    #         "$(date '+%Y-%m-%d %H:%M:%S')"
-    # else
-    #     printf "[ERROR][DBSYNC] %s S3 sync failed for DB Backups (exit code: %s)\n" \
-    #         "$(date '+%Y-%m-%d %H:%M:%S')" "${STATUS}"
-    #     return "${STATUS}"
-    # fi
+    if [ "${STATUS}" -eq 0 ]; then
+        printf "[SUCCESS][DBSYNC] %s S3 sync completed for DB Backups\n" \
+            "$(date '+%Y-%m-%d %H:%M:%S')"
+    else
+        printf "[ERROR][DBSYNC] %s S3 sync failed for DB Backups (exit code: %s)\n" \
+            "$(date '+%Y-%m-%d %H:%M:%S')" "${STATUS}"
+        return "${STATUS}"
+    fi
 }
 
 # Delete DB backups older than a given retention date (default: 30 days)
