@@ -62,10 +62,10 @@ mkdir -p "${DB_BACKUP_DIRECTORY}"
 mkdir -p "${LOG_DIRECTORY}"
 
 # Setup logging
-TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
-LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
+# TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+# LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
 
-exec > "${LOG_FILE}" 2>&1
+# exec > >(tee -a "${LOG_FILE}") 2>&1
 
 # Backup craft databases
 create_database_backup() {
