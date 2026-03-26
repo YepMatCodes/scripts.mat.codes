@@ -130,9 +130,7 @@ s3_sync_db_backups() {
     printf "[DEBUG][DBSYNC] Backup target: %s\n" "${S3_BACKUP_TARGET}"
 
     aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
-        --profile craftcms-backups \
-        --no-progress \
-        --only-show-errors
+        --profile craftcms-backups
     STATUS=$?
 
     if [ "${STATUS}" -eq 0 ]; then
