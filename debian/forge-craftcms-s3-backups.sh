@@ -82,12 +82,13 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
-    printf "\nCreating DB backup for ${SITE_NAME}\n"
+    printf "Creating DB backup for ${SITE_NAME}\n"
     if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
-            --zip 1 --interactive 0; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}"
+            --zip 1 --interactive 0 \
+            > /dev/null 2>&1; then
+        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}"
+        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -116,9 +117,9 @@ s3_sync_files() {
           --exclude "*/storage/runtime/*" \
           --no-progress \
           --only-show-errors; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}"
+        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}"
+        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}\n"
     fi
 }
 
@@ -128,9 +129,9 @@ s3_sync_db_backups() {
           --profile craftcms-backups \
           --no-progress \
           --only-show-errors; then
-        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups"
+        printf "\n[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups\n"
     else
-        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups"
+        printf "\n[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups\n"
     fi
 }
 
@@ -141,7 +142,7 @@ s3_backup_retention() {
         -print -delete
 }
 
-printf "Backup started at: $(date '+%Y-%m-%d %H:%M:%S')\n\n"
+printf "Backup started at: $(date '+%Y-%m-%d %H:%M:%S')\n"
 
 # Loop through all directories in /home/forge looking for craft installs
 for d in /home/forge/*/; do
@@ -157,6 +158,6 @@ done
 s3_sync_db_backups
 s3_backup_retention
 
-printf "\n\nBackup finished at: $(date '+%Y-%m-%d %H:%M:%S')"
+printf "\nBackup finished at: $(date '+%Y-%m-%d %H:%M:%S')\n"
 
 exit 0
