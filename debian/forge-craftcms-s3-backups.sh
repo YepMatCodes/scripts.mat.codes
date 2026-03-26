@@ -81,6 +81,7 @@ create_database_backup() {
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
+    echo "\nCreating DB backup for ${SITE_NAME}"
     "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" --zip 1 --interactive 0
 }
 
@@ -96,7 +97,7 @@ s3_sync_files() {
 
     # Sync site files
     echo "\nSyncing ${SITE_NAME} site files"
-    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups --no-progress
+    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups
 }
 
 # Sync DB backup directory
