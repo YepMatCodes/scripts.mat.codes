@@ -99,10 +99,14 @@ s3_sync_files() {
     echo "\nSyncing ${SITE_NAME} site files"
     aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
       --profile craftcms-backups \
+      --exclude ".git/*" \
       --exclude "vendor/*" \
       --exclude "node_modules/*" \
       --exclude "storage/runtime/*" \
-      --exclude ".git/*"
+      --exclude "*/.git/*" \
+      --exclude "*/vendor/*" \
+      --exclude "*/node_modules/*" \
+      --exclude "*/storage/runtime/*"
 }
 
 # Sync DB backup directory
