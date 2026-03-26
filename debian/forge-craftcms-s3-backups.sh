@@ -125,8 +125,11 @@ s3_sync_files() {
 # Sync DB backup directory
 s3_sync_db_backups() {
 
-aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
-          --profile craftcms-backups
+    printf "Backup dir: ${DB_BACKUP_DIRECTORY}"
+    printf "Backup tar: ${DB_BACKUP_DIRECTORY}"
+
+    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
+        --profile craftcms-backups
     # if aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
     #       --profile craftcms-backups \
     #       --no-progress \
