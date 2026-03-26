@@ -63,10 +63,10 @@ mkdir -p "${DB_BACKUP_DIRECTORY}"
 mkdir -p "${LOG_DIRECTORY}"
 
 # Setup logging
-# TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
-# LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
+TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
 
-# exec > >(tee -a "${LOG_FILE}") 2>&1
+exec > >(tee -a "${LOG_FILE}") 2>&1
 
 # Backup craft databases
 create_database_backup() {
@@ -83,7 +83,12 @@ create_database_backup() {
 
     # Backup the craft database
     echo "\nCreating DB backup for ${SITE_NAME}"
-    "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" --zip 1 --interactive 0
+    if "${CRAFT_DIRECTORY}/craft" db/backup "${SITE_DB_BACKUP_PATH}" \
+            --zip 1 --interactive 0; then
+        echo "[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup completed for ${SITE_NAME}"
+    else
+        echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') Craft DB backup failed for ${SITE_NAME}"
+    fi
 }
 
 # Sync site files to S3
@@ -99,31 +104,42 @@ s3_sync_files() {
     echo ${SITE_NAME}
 
     # Sync site files
-    echo "\nSyncing ${SITE_NAME} site files"
-    echo "Site name: ${SITE_NAME}"
-    echo "Source: ${CRAFT_DIRECTORY}"
-    echo "Target: ${S3_BACKUP_TARGET}/${SITE_NAME}"
-    # aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
-    #   --profile craftcms-backups \
-    #   --exclude ".git/*" \
-    #   --exclude "vendor/*" \
-    #   --exclude "node_modules/*" \
-    #   --exclude "storage/runtime/*" \
-    #   --exclude "*/.git/*" \
-    #   --exclude "*/vendor/*" \
-    #   --exclude "*/node_modules/*" \
-    #   --exclude "*/storage/runtime/*"
+    if aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
+          --profile craftcms-backups \
+          --exclude ".git/*" \
+          --exclude "vendor/*" \
+          --exclude "node_modules/*" \
+          --exclude "storage/runtime/*" \
+          --exclude "*/.git/*" \
+          --exclude "*/vendor/*" \
+          --exclude "*/node_modules/*" \
+          --exclude "*/storage/runtime/*" \
+          --no-progress; then
+        echo "[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for ${SITE_NAME}"
+    else
+        echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for ${SITE_NAME}"
+    fi
 }
 
 # Sync DB backup directory
 s3_sync_db_backups() {
-    echo "\nPerforming database backup"
-    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups --no-progress
+    if aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
+          --profile craftcms-backups \
+          --no-progress; then
+        echo "[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') S3 sync completed for DB Backups"
+    else
+        echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') S3 sync failed for DB Backups"
+    fi
 }
 
+# Delete DB backups older than a given retention date (default: 30 days)
 s3_backup_retention() {
-    find "${DB_BACKUP_DIRECTORY}" -type f -mtime +"${RETENTION_DAYS}" -delete
+    echo "Removing backups older than ${RETENTION_DAYS} days old"
+    find "${DB_BACKUP_DIRECTORY}" -type f -mtime +"${RETENTION_DAYS}" \
+        -print -delete
 }
+
+echo "\nBackup started at: $(date '+%Y-%m-%d %H:%M:%S')"
 
 # Loop through all directories in /home/forge looking for craft installs
 for d in /home/forge/*/; do
@@ -137,7 +153,8 @@ for d in /home/forge/*/; do
 done
 
 s3_sync_db_backups
+s3_backup_retention
 
-echo "S3 backups done"
+echo "\nBackup finished at: $(date '+%Y-%m-%d %H:%M:%S')"
 
 exit 0
