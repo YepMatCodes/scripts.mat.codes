@@ -63,8 +63,8 @@ mkdir -p "${DB_BACKUP_DIRECTORY}"
 mkdir -p "${LOG_DIRECTORY}"
 
 # Setup logging
-TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
-LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups_${TIMESTAMP}.log"
+# TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups.log"
 
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
@@ -141,7 +141,7 @@ s3_backup_retention() {
         -print -delete
 }
 
-printf "Backup started at: $(date '+%Y-%m-%d %H:%M:%S')\n"
+printf "Backup started at: $(date '+%Y-%m-%d %H:%M:%S')\n\n"
 
 # Loop through all directories in /home/forge looking for craft installs
 for d in /home/forge/*/; do
