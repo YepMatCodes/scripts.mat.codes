@@ -54,8 +54,8 @@ S3_BACKUP_TARGET="s3://${S3_BUCKET_NAME}/${HOSTNAME}"
 
 HOSTNAME="$(hostname)"
 
-DB_BACKUP_DIRECTORY="/home/forge/db-backups"
-LOG_DIRECTORY="/home/forge/scripts/logs"
+DB_BACKUP_DIRECTORY="/home/forge/_db-backups"
+LOG_DIRECTORY="/home/forge/backup-logs"
 
 # Create backup and log directories if not already present
 mkdir -p "${DB_BACKUP_DIRECTORY}"
@@ -97,7 +97,12 @@ s3_sync_files() {
 
     # Sync site files
     echo "\nSyncing ${SITE_NAME} site files"
-    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" --profile craftcms-backups
+    aws s3 sync "${CRAFT_DIRECTORY}" "${S3_BACKUP_TARGET}/${SITE_NAME}" \
+      --profile craftcms-backups \
+      --exclude "vendor/*" \
+      --exclude "node_modules/*" \
+      --exclude "storage/runtime/*" \
+      --exclude ".git/*"
 }
 
 # Sync DB backup directory
