@@ -124,19 +124,19 @@ s3_sync_files() {
 
 # Sync DB backup directory
 s3_sync_db_backups() {
-    DB_S3_BACKUP_TARGET="${S3_BACKUP_TARGET}/_DB-Backups"
+    local DB_S3_BACKUP_TARGET="${S3_BACKUP_TARGET}/db_backups"
 
     printf "[DEBUG][DBSYNC] Backup dir: %s\n" "${DB_BACKUP_DIRECTORY}"
-    printf "[DEBUG][DBSYNC] Backup target: %s\n" "${S3_BACKUP_TARGET}"
+    printf "[DEBUG][DBSYNC] Backup target: %s\n" "${DB_S3_BACKUP_TARGET}"
 
-    aws s3 sync "${DB_BACKUP_DIRECTORY}" "${S3_BACKUP_TARGET}" \
-        --profile craftcms-backups
-    STATUS=$?
-
-    if [ "${STATUS}" -eq 0 ]; then
+    if aws s3 sync "${DB_BACKUP_DIRECTORY}" "${DB_S3_BACKUP_TARGET}" \
+          --profile craftcms-backups \
+          --no-progress \
+          --only-show-errors; then
         printf "[SUCCESS][DBSYNC] %s S3 sync completed for DB Backups\n" \
             "$(date '+%Y-%m-%d %H:%M:%S')"
     else
+        STATUS=$?
         printf "[ERROR][DBSYNC] %s S3 sync failed for DB Backups (exit code: %s)\n" \
             "$(date '+%Y-%m-%d %H:%M:%S')" "${STATUS}"
         return "${STATUS}"
