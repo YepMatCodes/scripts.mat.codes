@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # ==============================================================================
 # File: forge-craftcms-s3-backups.sh
@@ -17,7 +17,7 @@
 #
 # Author: Mathew Norman
 # Created: 2026-03-27
-# Last Updated: 2026-03-27
+# Last Updated: 2026-04-02
 # ==============================================================================
 
 RETENTION_DAYS=30
@@ -62,15 +62,17 @@ LOG_DIRECTORY="/home/forge/backup-logs"
 mkdir -p "${DB_BACKUP_DIRECTORY}"
 mkdir -p "${LOG_DIRECTORY}"
 
-# Setup logging
-# TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+# Setup logging (POSIX: mkfifo + tee instead of bash process substitution)
 LOG_FILE="${LOG_DIRECTORY}/forge-craftcms-s3-backups.log"
-
-exec > >(tee -a "${LOG_FILE}") 2>&1
+_log_fifo="${LOG_DIRECTORY}/forge-craftcms-s3-backups.$$"
+mkfifo "$_log_fifo"
+tee -a "${LOG_FILE}" <"$_log_fifo" &
+exec >"$_log_fifo" 2>&1
+rm -f "$_log_fifo"
 
 # Backup craft databases
 create_database_backup() {
-    local CRAFT_DIRECTORY="$1"
+    CRAFT_DIRECTORY="$1"
 
     # Isolate the server name by stripping the /home/forge/ portion and any trailing /current or slashes
     SITE_NAME="${CRAFT_DIRECTORY#/home/forge/}"
@@ -78,7 +80,7 @@ create_database_backup() {
     SITE_NAME="${SITE_NAME%/current}"
     SITE_NAME="${SITE_NAME%/}"
 
-    local SITE_DB_BACKUP_PATH="${DB_BACKUP_DIRECTORY}/${SITE_NAME}/"
+    SITE_DB_BACKUP_PATH="${DB_BACKUP_DIRECTORY}/${SITE_NAME}/"
     mkdir -p "${SITE_DB_BACKUP_PATH}"
 
     # Backup the craft database
@@ -93,7 +95,7 @@ create_database_backup() {
 
 # Sync site files to S3
 s3_sync_files() {
-    local CRAFT_DIRECTORY="$1"
+    CRAFT_DIRECTORY="$1"
 
     # Isolate the server name by stripping the /home/forge/ portion and any trailing /current or slashes
     SITE_NAME="${CRAFT_DIRECTORY#/home/forge/}"
@@ -124,7 +126,7 @@ s3_sync_files() {
 
 # Sync DB backup directory
 s3_sync_db_backups() {
-    local DB_S3_BACKUP_TARGET="${S3_BACKUP_TARGET}/_db_backups"
+    DB_S3_BACKUP_TARGET="${S3_BACKUP_TARGET}/_db_backups"
 
     # printf "[DEBUG][DBSYNC] Backup dir: %s\n" "${DB_BACKUP_DIRECTORY}"
     # printf "[DEBUG][DBSYNC] Backup target: %s\n" "${DB_S3_BACKUP_TARGET}"
@@ -147,7 +149,7 @@ s3_sync_db_backups() {
 s3_backup_retention() {
     printf "\nRemoving backups older than ${RETENTION_DAYS} days old\n"
     find "${DB_BACKUP_DIRECTORY}" -type f -mtime +"${RETENTION_DAYS}" \
-        -print -delete
+        -print -exec rm -f {} \;
 }
 
 printf "Backup started at: $(date '+%Y-%m-%d %H:%M:%S')\n\n"
